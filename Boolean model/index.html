@@ -6,18 +6,205 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 </head>
 <body>
-  <div id="app">
-    <v-app>
-      <v-content>
-        <v-container>Hello world</v-container>
-      </v-content>
+    <v-app id="app">
+        <v-container>
+            <v-layout row wrap align-center style="justify-content: center;align-items:center;">
+                    <v-flex xs6 class="text-xs-center">
+                            <v-form v-model="form">
+                                <v-flex mt-4>
+                                        <!-- <v-text-field
+                                        @change = ""
+                                          v-model="CurrentDocumentName"
+                                          label="Enter a Document Name"
+                                          :rules = "DocumentNameRule"
+                                          clearable
+                                          mt-3
+                                        ></v-text-field> -->
+                                </v-flex>
+                                   <v-flex mat4>
+                                        <v-textarea
+                                        v-model="CurrentDocumentContent"
+                                        auto-grow
+                                        box
+                                        :rules = "DocumentContentRule"
+                                        color="deep-purple"
+                                        label="Document text"
+                                        rows="2"
+                                    ></v-textarea>
+                                   </v-flex>
+                                   <v-flex mt-3>
+                                   <v-btn
+                                        class= "red"
+                                        dark
+                                        large
+                                        @click="handleNewDoc()"
+                                        >
+                                        Add Document
+                                        </v-btn>
+                                        <v-btn
+                                        class= "black"
+                                        dark
+                                        large
+                                        :rules = "generateIncidenceMatrixRule"
+                                        @click="generateIncidenceMatrix()"
+                                        >
+                                        Generate Incidenece Matrix
+                                        </v-btn>
+                                   </v-flex>
+                            </v-form>
+                        </v-flex>
+                        <v-flex xs12></v-flex>
+                        <v-flex xs6 class="text-xs-center">
+                            <div class="font-weight-thin display-3 mb-2 mt-2">Documents</div>
+                            <v-flex v-if="!Documents.length" class="font-weight-thin display-1">No Documents to Show</v-flex>
+                            <v-flex v-else>
+                                            <template  v-for= "(item,i) in this.Documents">
+                                                <v-card class="red lighten-4">
+                                                        <v-flex class="ma-2">
+                                                                <div class="display-2">{{item.Name}}</div>
+                                                                <v-list-tile >
+                                                              <v-list-tile-content>
+                                                                  {{item.Content}}
+                                                                  </v-list-tile-content>    
+                                                                </v-list-tile>
+                                                        </v-flex>
+                                                </v-card>
+                                                </template>
+                            </v-flex>
+                            </div>
+                        </v-flex>
+                        <v-flex xs12></v-flex>
+                        <v-flex xs6 class="text-xs-center">
+                            <div class="font-weight-thin display-3 mb-2 mt-2">Incidence Matrix</div>
+                            <v-layout row wrap align-center style="justify-content: center;align-items:center;">
+                                    <table v-if="incidenceMatrix" class="elevation-15">
+                                            <tr>
+                                                    <th class="pa-2 display-1" v-for="header in headers">{{header}}</th>
+                                            </tr>
+                                            <tr v-for="term in incidenceMatrix">
+                                                <td v-for="bool in term">{{bool}}</td>
+                                            </tr>
+                                        </table>
+                            </v-layout>
+                            
+                            <!-- <v-data-table
+                                :items="incidenceMatrix"
+                                class="elevation-1"
+                                :headers="headers"
+                                hide-actions
+                            >
+                                <template  slot="items" slot-scope="props" >
+                                <tr v-for= "item in props.items">
+                                    <td>{{item}}</td>
+                                </tr>
+                                </template>
+                            </v-data-table> -->
+                        </v-flex>
+            </v-layout>
+                   
+        </v-container>
+                            <!-- <v-list>
+                        
+                    </v-list> -->
     </v-app>
-  </div>
  
   <script src="../assets/js/vue.js"></script>
   <script src="../assets/js/vuetify.js"></script>
   <script>
-    new Vue({ el: '#app' })
+    new Vue({
+         el: '#app',
+         data(){
+             return {
+                    form:true,
+                    //CurrentDocumentName: '',
+                    CurrentDocumentContent:'',
+                    incidenceMatrix:[],
+                    bagOfWords:[],
+                    headers:[],
+                    Documents : [
+                    ],
+                    // DocumentNameRule :[
+                    //     v => !!v || 'Document Name is Required',
+                    //     v => (v && v.length <= 10) || 'Document Name must be less than 10 characters' 
+                    // ],
+                    DocumentContentRule :[
+                        v => !!v || 'Some content is required',
+                        v => (v && v.length >= 5) || 'Document content must be more than 10 characters' 
+                    ],
+                    generateIncidenceMatrixRule :[]
+             }
+         },
+         methods : {
+            handleNewDoc : function(){
+                let Content = this.CurrentDocumentContent
+                //this returns new array with terms not including stop words
+                let DocumentWithoutStopwords = this.removeStopWords(Content.toLowerCase().split(' '))
+                //getting every term out of the array and inserting into bag of words
+                DocumentWithoutStopwords.forEach((term)=>this.bagOfWords.push(term))
+                //remove duplicate terms
+                this.Documents.push({
+                        //Name: this.CurrentDocumentName,
+                        Name:`Doc ${this.Documents.length+1}`,
+                        Content: this.CurrentDocumentContent
+                    })
+               // this.CurrentDocumentName = ''
+                this.CurrentDocumentContent = ''
+            },
+            generateIncidenceMatrix : function(){
+                this.headers = ['Terms/Docs']
+                this.Documents.forEach((doc,index)=> this.headers.push(`Doc${index+1}`))
+                let Unique = this.getUniqueTerms(this.bagOfWords)
+                this.bagOfWords = Unique
+                for( let row = 0 ; row < Unique.length  ; row++ ){
+                    // this.headers.push({text:`doc${row+1}`})
+                    this.incidenceMatrix[row] = []
+                    this.incidenceMatrix[row][0] = Unique[row]
+                    for(let column = 0 ; column < this.Documents.length  ; column++ ){ 
+                        let index = this.Documents[column].Content.toLowerCase().search(Unique[row])
+                        // this.incidenceMatrix[row][column].name = Unique[column]
+                        if( index > -1 ){
+                            this.incidenceMatrix[row][column+1] = 1
+                        }else{
+                            this.incidenceMatrix[row][column+1] = 0
+                        }
+                    }
+                }
+                console.log(this.incidenceMatrix)
+                // Unique.forEach((term,i)=>incidenceMatrix[i])
+                // incidenceMatrix.forEach((row,i)=>row.name = Unique[column])
+                
+            },
+            //a function to return new array of all the words so far from documents without Stop words
+            removeStopWords  : Document => Document.filter( term => stopwords.includes(term) !=true ),
+            //a function to return a new array with no duplicates
+            getUniqueTerms : a => [...new Set(a)]
+         }
+    })
+
+  </script>
+  <script>
+      let stopwords = [
+          "a", "about", "above", "after", "again", "against", "all",
+       "am", "an", "and", "any","are","aren't","as","at","be","because"
+       ,"been","before","being","below","between","both","but","by"
+       ,"can't","cannot","could","couldn't","did","didn't","do","does"
+       ,"doesn't","doing","don't","down","during","each","few","for"
+       ,"from","further","had","hadn't","has","hasn't","have","haven't"
+       ,"having","he","he'd","he'll","he's","her","here","here's","hers"
+       ,"herself","him","himself","his","how","how's","i","i'd","i'll","i'm"
+       ,"i've","if","in","into","is","isn't","it","it's","its","itself","let's","me"
+       ,"more","most","mustn't","my","myself","no","nor","not","of",
+       "off","on","once","only","or","other","ought","our","ours",
+       "ourselves","out","over","own","same","shan't","she",
+       "she'd","she'll","she's","should","shouldn't","so","some",
+       "such","than","that","that's","the","their","theirs","them",
+       "themselves","then","there","there's","these","they","they'd",
+       "they'll","they're","they've","this","those","through","to","too",
+       "under","until","up","very","was","wasn't","we","we'd","we'll","we're",
+       "we've","were","weren't","what","what's","when","when's","where",
+       "where's","which","while","who","who's","whom","why","why's","with",
+       "won't","would","wouldn't","you","you'd","you'll","you're","you've",
+       "your","yours","yourself","yourselves"]
   </script>
 </body>
 </html>

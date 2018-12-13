@@ -1,29 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Boolean Model</title>
-    <script src="vue.js"></script>
-    <link href='https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons' rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
-    
-
-    <script ></script>
+  <link href='../assets/fonts/Icons.css' rel="stylesheet">
+  <link href="../assets/css/vuetify.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 </head>
 <body>
-<div>{{message}}</div>
+  <div id="app">
+    <v-app>
+      <v-content>
+        <v-container>Hello world</v-container>
+      </v-content>
+    </v-app>
+  </div>
+ 
+  <script src="../assets/js/vue.js"></script>
+  <script src="../assets/js/vuetify.js"></script>
+  <script>
+    new Vue({ el: '#app' })
+  </script>
 </body>
 </html>
-
-<script>
-    let app = new Vue({
-    el: '#app',
-    data: {
-        message: 'Hello Vue!'
-    }
-    })
-</script>

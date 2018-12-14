@@ -197,10 +197,15 @@
                         let str = ''
                         bits.forEach((bit)=>str += bit)
                         
-                        return Number.parseInt(bits, 2).toString()
+                        return Number.parseInt(str, 2).toString()
                         }
                     })
-                console.log(newQ)
+                    let str = ''
+                    newQ.forEach((el)=>{
+                        str+=el
+                    })
+                    let result = eval(str).toString(2)
+                console.log(result)
             }
          }
     })

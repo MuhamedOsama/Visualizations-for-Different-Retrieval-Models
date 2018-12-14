@@ -1,23 +1,32 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <link href='../assets/fonts/Icons.css' rel="stylesheet">
   <link href="../assets/css/vuetify.min.css" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 </head>
+
 <body>
   <div id="app">
     <v-app>
       <v-content>
-        <v-container>Hello world</v-container>
+        <v-container>
+          <v-layout row wrap align-center style="justify-content: center;align-items:center;">
+            
+          </v-layout>
+        </v-container>
       </v-content>
     </v-app>
   </div>
- 
+
   <script src="../assets/js/vue.js"></script>
   <script src="../assets/js/vuetify.js"></script>
   <script>
-    new Vue({ el: '#app' })
+    new Vue({
+      el: '#app'
+    })
   </script>
 </body>
+
 </html>

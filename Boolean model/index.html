@@ -187,22 +187,7 @@
                 let keys = ['or','and','not','andor','andnot']
                 let filtered = QueryParsed.filter((el)=>keys.indexOf(el.toLowerCase())<0)
                 let found = []
-                let newQuery = QueryParsed.map((el)=>{
-                    if(keys.indexOf(el)<0){
-                        
-                    }
-                })
-                filtered.forEach((el)=>{
-                    let bits = this.incidenceMatrix.find((row)=> row[0]==el).slice(1)
-                    let str = ''
-                    bits.forEach((bit)=>str += bit)
-                    found.push(str)
-                })
-                found = found.map((bits)=>Number.parseInt(bits, 2))
-                })
             }
-         }
-    })
   </script>
   <script>
       let stopwords = [

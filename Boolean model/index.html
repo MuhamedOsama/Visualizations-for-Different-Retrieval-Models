@@ -185,8 +185,22 @@
                 this.QueryText = this.QueryText.toLowerCase()
                 let QueryParsed = this.QueryText.split(' ')
                 let keys = ['or','and','not','andor','andnot']
+                console.log(QueryParsed)
                 let filtered = QueryParsed.filter((el)=>keys.indexOf(el.toLowerCase())<0)
-                let found = []
+                let newQ = QueryParsed.map((el)=>{
+                    if(keys.indexOf(el)>-1){
+                        if(el=='and'){return "&"}
+                        else if(el=='or'){return "|"}
+                        else if(el == 'not'){return '~'}
+                    }else{
+                        let bits = this.incidenceMatrix.find((row)=> row[0]==el).slice(1)
+                        let str = ''
+                        bits.forEach((bit)=>str += bit)
+                        
+                        return Number.parseInt(bits, 2).toString()
+                        }
+                    })
+                console.log(newQ)
             }
          }
     })

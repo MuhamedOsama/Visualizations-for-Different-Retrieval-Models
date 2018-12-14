@@ -145,21 +145,25 @@
          },
          methods : {
             handleNewDoc : function(){
+                
+                if(/\S/.test(this.CurrentDocumentContent)){
                 let Content = this.CurrentDocumentContent
                 //this returns new array with terms not including stop words
-                let DocumentWithoutStopwords = this.removeStopWords(Content.toLowerCase().split(' '))
+                let DocumentWithoutStopwords = this.removeStopWords(Content.toLowerCase().trim().split(' '))
                 //getting every term out of the array and inserting into bag of words
                 DocumentWithoutStopwords.forEach((term)=>this.bagOfWords.push(term))
                 //remove duplicate terms
                 this.Documents.push({
                         //Name: this.CurrentDocumentName,
                         Name:`Doc ${this.Documents.length+1}`,
-                        Content: this.CurrentDocumentContent
+                        Content: this.CurrentDocumentContent.trim()
                     })
                // this.CurrentDocumentName = ''
                 this.CurrentDocumentContent = ''
+                }
             },
             generateIncidenceMatrix : function(){
+                if(this.Documents.length>0){
                 this.headers = ['Terms/Docs']
                 this.Documents.forEach((doc,index)=> this.headers.push(`Doc${index+1}`))
                 let Unique = this.getUniqueTerms(this.bagOfWords)
@@ -175,6 +179,7 @@
                             this.incidenceMatrix[row][column+1] = 0
                         }
                     }
+                }
                 }
             },
             //a function to return new array of all the words so far from documents without Stop words

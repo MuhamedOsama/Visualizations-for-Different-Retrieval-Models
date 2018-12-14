@@ -12,14 +12,6 @@
                     <v-flex xs6 class="text-xs-center">
                             <v-form v-model="form">
                                 <v-flex mt-4>
-                                        <!-- <v-text-field
-                                        @change = ""
-                                          v-model="CurrentDocumentName"
-                                          label="Enter a Document Name"
-                                          :rules = "DocumentNameRule"
-                                          clearable
-                                          mt-3
-                                        ></v-text-field> -->
                                 </v-flex>
                                    <v-flex mat4>
                                         <v-textarea
@@ -86,26 +78,43 @@
                                             </tr>
                                         </table>
                             </v-layout>
-                            
-                            <!-- <v-data-table
-                                :items="incidenceMatrix"
-                                class="elevation-1"
-                                :headers="headers"
-                                hide-actions
-                            >
-                                <template  slot="items" slot-scope="props" >
-                                <tr v-for= "item in props.items">
-                                    <td>{{item}}</td>
-                                </tr>
-                                </template>
-                            </v-data-table> -->
+                        
+                            <v-layout row wrap align-center style="justify-content: center;align-items:center;">
+                                    <v-flex mt-4>
+                                            <v-text-field
+                                            @change = ""
+                                              v-model="QueryText"
+                                              label="Enter a Query"
+                                              :rules = "QueryRule"
+                                              clearable
+                                              mt-3
+                                            ></v-text-field>
+                                    </v-flex>
+                                    <v-flex xs12></v-flex>
+                                    <v-flex mt-4>
+                                            <v-btn
+                                            class= "Blue"
+                                            dark
+                                            large
+                                            @click="Query"
+                                            >
+                                            Go
+                                            </v-btn>
+                                    </v-flex>
+                                    <v-flex xs12></v-flex>
+                                    <v-flex mt-4>
+                                        <div class="display-2">Query Results</div>
+                                        <div v-for="item in result">
+                                            <h3>{{item}}</h3>
+                                        </div>
+                                    </v-flex>
+                            </v-layout>
+
                         </v-flex>
             </v-layout>
                    
         </v-container>
-                            <!-- <v-list>
-                        
-                    </v-list> -->
+
     </v-app>
  
   <script src="../assets/js/vue.js"></script>
@@ -116,17 +125,17 @@
          data(){
              return {
                     form:true,
-                    //CurrentDocumentName: '',
                     CurrentDocumentContent:'',
                     incidenceMatrix:[],
                     bagOfWords:[],
+                    matched : [],
                     headers:[],
+                    result:[],
                     Documents : [
                     ],
-                    // DocumentNameRule :[
-                    //     v => !!v || 'Document Name is Required',
-                    //     v => (v && v.length <= 10) || 'Document Name must be less than 10 characters' 
-                    // ],
+                    QueryText:'',
+                    QueryRule:[v => !! v || 'A Query is required'],
+
                     DocumentContentRule :[
                         v => !!v || 'Some content is required',
                         v => (v && v.length >= 5) || 'Document content must be more than 10 characters' 
@@ -156,12 +165,10 @@
                 let Unique = this.getUniqueTerms(this.bagOfWords)
                 this.bagOfWords = Unique
                 for( let row = 0 ; row < Unique.length  ; row++ ){
-                    // this.headers.push({text:`doc${row+1}`})
                     this.incidenceMatrix[row] = []
                     this.incidenceMatrix[row][0] = Unique[row]
-                    for(let column = 0 ; column < this.Documents.length  ; column++ ){ 
-                        let index = this.Documents[column].Content.toLowerCase().search(Unique[row])
-                        // this.incidenceMatrix[row][column].name = Unique[column]
+                    for(let column = 0 ; column < this.Documents.length  ; column++ ){
+                        let index = this.Documents[column].Content.toLowerCase().search(Unique[row]) 
                         if( index > -1 ){
                             this.incidenceMatrix[row][column+1] = 1
                         }else{
@@ -169,22 +176,39 @@
                         }
                     }
                 }
-                console.log(this.incidenceMatrix)
-                // Unique.forEach((term,i)=>incidenceMatrix[i])
-                // incidenceMatrix.forEach((row,i)=>row.name = Unique[column])
-                
             },
             //a function to return new array of all the words so far from documents without Stop words
             removeStopWords  : Document => Document.filter( term => stopwords.includes(term) !=true ),
             //a function to return a new array with no duplicates
-            getUniqueTerms : a => [...new Set(a)]
+            getUniqueTerms : a => [...new Set(a)],
+            Query : function(){
+                this.QueryText = this.QueryText.toLowerCase()
+                let QueryParsed = this.QueryText.split(' ')
+                let keys = ['or','and','not','andor','andnot']
+                let filtered = QueryParsed.filter((el)=>keys.indexOf(el.toLowerCase())<0)
+                let found = []
+                let newQuery = QueryParsed.map((el)=>{
+                    if(keys.indexOf(el)<0){
+                        
+                    }
+                })
+                filtered.forEach((el)=>{
+                    let bits = this.incidenceMatrix.find((row)=> row[0]==el).slice(1)
+                    let str = ''
+                    bits.forEach((bit)=>str += bit)
+                    found.push(str)
+                })
+                found = found.map((bits)=>Number.parseInt(bits, 2))
+
+                    
+                })
+            }
          }
     })
-
   </script>
   <script>
       let stopwords = [
-          "a", "about", "above", "after", "again", "against", "all",
+        "a", "about", "above", "after", "again", "against", "all",
        "am", "an", "and", "any","are","aren't","as","at","be","because"
        ,"been","before","being","below","between","both","but","by"
        ,"can't","cannot","could","couldn't","did","didn't","do","does"
@@ -200,11 +224,11 @@
        "such","than","that","that's","the","their","theirs","them",
        "themselves","then","there","there's","these","they","they'd",
        "they'll","they're","they've","this","those","through","to","too",
-       "under","until","up","very","was","wasn't","we","we'd","we'll","we're",
-       "we've","were","weren't","what","what's","when","when's","where",
-       "where's","which","while","who","who's","whom","why","why's","with",
-       "won't","would","wouldn't","you","you'd","you'll","you're","you've",
-       "your","yours","yourself","yourselves"]
+       "under","until","up","very","was","wasn't","we","we'd","we'll",
+       "we're","we've","were","weren't","what","what's","when","when's",
+       "where","where's","which","while","who","who's","whom","why",
+       "why's","with","won't","would","wouldn't","you","you'd","you'll",
+       "you're","you've","your","yours","yourself","yourselves"," "]
   </script>
 </body>
 </html>

@@ -51,7 +51,7 @@
                     <v-btn class="black" dark large @click="calc_IDF()">
                         Calculate idf
                     </v-btn>
-                    <v-btn class="black" dark large @click="">
+                    <v-btn class="black" dark large @click="calc_TFVector()">
                         Calculate tf
                     </v-btn>
                     <v-btn class="black" dark large @click="">
@@ -68,12 +68,30 @@
                                 <v-flex class="ma-2">
                                     <v-list-tile>
                                         <v-list-tile-content>
-                                            {{item.termName}} idf = log10({{Documents.length}}/{{item.termDublications}}) = {{item.idf}}
+                                            {{item.termName}} idf =
+                                            log10({{Documents.length}}/{{item.termDublications}}) = {{item.idf}}
                                         </v-list-tile-content>
                                     </v-list-tile>
                                 </v-flex>
                             </v-card>
                         </template>
+                    </v-flex>
+                    </div>
+                </v-flex>
+                <v-flex xs12></v-flex>
+                <v-flex xs6 class="text-xs-center">
+                    <div class="font-weight-thin display-3 mb-2 mt-2">TF For Each Word</div>
+                    <v-flex v-if="!tfvectorex" class="font-weight-thin display-1">TFs not Calculated</v-flex>
+                    <v-flex v-else>
+                        <table v-if="tfvector" class="elevation-15 text-xs-center">
+                            <tr>
+                                <th class="pa-2 display-1" v-for="header in tfheaders">{{header}}</th>
+                            </tr>
+                            <tr v-for="(term,i) in tfvector">
+                                <td>{{wordsList[i].termName}}</td>
+                                <td v-for="bool in term">{{bool}}</td>
+                            </tr>
+                        </table>
                     </v-flex>
                     </div>
                 </v-flex>
@@ -126,13 +144,15 @@
                     CurrentDocumentContent: '',
                     QueryText: '',
                     idfCalc: false,
-                    tfCalc: false,
+                    tfvectorex: false,
                     tdidfCalc: false,
 
                     wordsList: [],
                     Documents: [],
+                    tfheaders: [],
                     result: [],
-                    
+                    tfvector: [],
+
                     QueryRule: [
                         v => !!v || 'A Query is required'
                     ],
@@ -155,14 +175,18 @@
                     //getting every term out of the array and inserting into bag of words and count dublications
                     DocumentWords.forEach((term) => {
                         let found = false
-                        for(var i = 0; i < this.wordsList.length; i++) {
+                        for (var i = 0; i < this.wordsList.length; i++) {
                             if (this.wordsList[i].termName == term) {
                                 found = true
-                                ++this.wordsList[i].termDublications
+                                    ++this.wordsList[i].termDublications
                                 break
                             }
                         }
-                        if (!found) this.wordsList.push({termName:term,termDublications:1,idf:0})
+                        if (!found) this.wordsList.push({
+                            termName: term,
+                            termDublications: 1,
+                            idf: 0
+                        })
                     })
                     // this.CurrentDocumentName = ''
                     this.CurrentDocumentContent = ''
@@ -171,10 +195,35 @@
                 calc_IDF: function () {
                     let N = this.Documents.length
                     this.wordsList.forEach((term) => {
-                        term.idf = Math.log10(N/term.termDublications).toFixed(3)
+                        term.idf = Math.log10(N / term.termDublications).toFixed(3)
                     })
                     this.idfCalc = true
                     console.log(this.wordsList)
+                },
+                calc_TFVector: function () {
+
+                    this.tfheaders = ['Words/Docs']
+                    this.Documents.forEach((doc, index) => this.tfheaders.push(`Doc ${index+1}`))
+
+                    for (let wordid = 0; wordid < this.wordsList.length; wordid++) {
+                        this.tfvector.push(new Array());
+                        for (let docid = 0; docid < this.Documents.length; docid++) {
+                            this.tfvector[wordid].push(0);
+                        }
+                    }
+
+                    for (let docid = 0; docid < this.Documents.length; docid++) {
+                        for (let wordid = 0; wordid < this.wordsList.length; wordid++) {
+                            if (this.Documents[docid].Content.toLowerCase().includes(this.wordsList[wordid]
+                                    .termName)) {
+                                ++this.tfvector[wordid][docid]
+                            } else {
+                                this.tfvector[wordid][docid] = 0
+                            }
+                        }
+                    }
+                    console.log(this.tfvector)
+                    this.tfvectorex = true
                 }
             }
         })

@@ -50,9 +50,51 @@
               </v-layout>
             </template>
           </v-flex>
-          </div>
         </v-flex>
         <v-flex xs12></v-flex>
+        <v-layout row wrap align-center style="justify-content:center;align-items:center;" class="mb-2">
+          <v-flex xs6 class="text-xs-center">
+
+          
+          <v-flex mt-4>
+                   <v-text-field
+                  @change = ""
+                    v-model="QueryText"
+                     label="Enter a Word"
+                     :rules = "QueryRule"
+                     clearable
+                     mt-3
+                   ></v-text-field>
+           </v-flex>
+           <v-flex xs12></v-flex>
+          <v-flex mt-4>
+            <v-btn
+            class= "Blue"
+            dark
+             large
+             @click="Query"
+             >
+            Go
+             </v-btn>
+    </v-flex>
+    <v-flex xs12></v-flex>
+          <v-flex mt-4 v-if="matchedDocs.length">
+            <div class="display-2">Query Results</div>
+                <h2 >Matched Documents Names</h2>
+                <v-flex xs12>
+                    <span v-for="docID in postingList" style="display:inline" class="ma-2 pa-2">{{docID}}</span>
+                </v-flex>
+                <h2>Matched Documents Content</h2>
+               <v-flex xs12>
+                  <span v-for="doc in matchedDocs" style="display:block">{{doc.Name}} : {{doc.Content}}</span>
+               </v-flex>
+              
+              
+            </div>
+        </v-flex>
+      </v-flex>
+        </v-layout>
+      
       </v-layout>
     </v-container>
   </v-app>
@@ -70,7 +112,11 @@
                     form:true,
                     CurrentDocumentContent:'',
                     bagOfWords:[],
+                    postingList:[],
+                    Structure:{},
+                    QueryText:'',
                     InvertedIndex:[],
+                    matchedDocs:[],
                     Documents : [
                     ],
                     // QueryText:'',
@@ -80,6 +126,7 @@
                         v => !!v || 'Some content is required',
                         v => (v && v.length >= 5) || 'Document content must be more than 10 characters' 
                     ],
+                    QueryRule:[v => !! v || 'A Query is required']
              }
          },
          methods : {
@@ -100,8 +147,15 @@
                   })
                 }
             },
+            Query: function(){
+              this.matchedDocs = []
+              this.postingList = []
+              this.postingList = this.Structure[stemmer(this.QueryText)].Docs
+              this.Documents.map((doc)=> this.postingList.includes(doc.Name) ? this.matchedDocs.push({Content: doc.Content,Name:doc.Name}) : '')
+              console.log(this.Structure)
+            } ,
             GenerateIIM: function(){
-              let Structure = {}
+              this.Structure = {}
               /*
               Steps to build an inverted index:
 
@@ -115,20 +169,17 @@ i'm loving these dogs and watching them eating is my favourite thing
               // let Docs = this.Documents.map( el=> ({text:el.Content,id:el.Name}))
               //Stemming and Removing Stopwords
               let terms = this.getUniqueTerms(this.bagOfWords)
-              console.log(terms)
+              //Record Document IDs
               terms.forEach((term)=>{
-                if(!Structure[term]){
+                if(!this.Structure[term]){
                   let FoundDocs =  []
                   this.Documents.forEach((doc)=> doc.cleaned.includes(term)?FoundDocs.push(doc.Name):null)
-                  Structure[term] = {
+                  this.Structure[term] = {
                     Docs: FoundDocs,
                 }
               }
               })
-              console.log(Structure)
-
-              //Record Document IDs
-              
+              console.log(this.Structure)              
               //console.log(Stemmed)
             },
             //a function to return new array of all the words so far from documents without Stop words

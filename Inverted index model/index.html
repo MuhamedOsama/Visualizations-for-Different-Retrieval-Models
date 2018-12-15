@@ -22,6 +22,9 @@
               <v-btn class="red" dark large @click="handleNewDoc()">
                 Add Document
               </v-btn>
+              <v-btn class="coral" dark large @click="GenerateIIM()">
+                Generate Inverted Index Model
+              </v-btn>
             </v-flex>
           </v-form>
         </v-flex>
@@ -31,16 +34,20 @@
           <v-flex v-if="!Documents.length" class="font-weight-thin display-1">No Documents to Show</v-flex>
           <v-flex v-else>
             <template v-for="(item,i) in this.Documents">
-              <v-card class="red lighten-4">
-                <v-flex class="ma-2">
-                  <div class="display-2">{{item.Name}}</div>
-                  <v-list-tile>
-                    <v-list-tile-content>
-                      {{item.Content}}
-                    </v-list-tile-content>
-                  </v-list-tile>
-                </v-flex>
-              </v-card>
+              <v-layout row wrap align-center style="justify-content:center;align-items:center;" class="mb-2">
+                  <v-flex xs12>
+                    <v-card class="red white--text">
+                      <div >{{item.Name}}</div>
+                      <div >{{item.Content}}</div>
+                    </v-card>
+                  </v-flex>
+                  <v-flex xs6>
+                      <v-card class="blue white--text">
+                          <div >Tokens</div>
+                          <div>{{item.Tokens}}</div>
+                        </v-card>
+                  </v-flex>
+              </v-layout>
             </template>
           </v-flex>
           </div>
@@ -52,7 +59,7 @@
 </body>
 
 </html>
-<script src="stemmer.js"></script>
+<script src="../assets/js/stemmer.js"></script>
 <script src="../assets/js/vue.js"></script>
 <script src="../assets/js/vuetify.js"></script>
 <script>
@@ -63,6 +70,7 @@
                     form:true,
                     CurrentDocumentContent:'',
                     bagOfWords:[],
+                    InvertedIndex:[],
                     Documents : [
                     ],
                     // QueryText:'',
@@ -77,22 +85,51 @@
          methods : {
             handleNewDoc : function(){
                 if(/\S/.test(this.CurrentDocumentContent)){
+                //DOC TEXT
                 let Content = this.CurrentDocumentContent
-                //this returns new array with terms not including stop words
+                //DOC WITH OUT STOPWORDS >> ARRAY OF TERMS
                 let DocumentWithoutStopwords = this.removeStopWords(Content.toLowerCase().trim().split(' '))
-                //getting every term out of the array and inserting into bag of words
-                DocumentWithoutStopwords.forEach((term)=>this.bagOfWords.push(term))
-                //remove duplicate terms
+                //BAG OF WORDS "ARRAY" CONTAINING ALL THE TERMS OF ALL THE DOCUMENTS
+                DocumentWithoutStopwords.forEach((term)=>this.bagOfWords.push(stemmer(term)))
                 this.Documents.push({
                         //Name: this.CurrentDocumentName,
                         Name:`Doc ${this.Documents.length+1}`,
-                        Content: this.CurrentDocumentContent.trim()
-                    })
-               // this.CurrentDocumentName = ''
-                this.CurrentDocumentContent = ''
+                        Content: this.CurrentDocumentContent.trim(),
+                        Tokens:DocumentWithoutStopwords,
+                        cleaned:DocumentWithoutStopwords.map((el)=>stemmer(el))
+                  })
                 }
-                console.log(this.Documents)
-                console.log(this.bagOfWords)
+            },
+            GenerateIIM: function(){
+              let Structure = {}
+              /*
+              Steps to build an inverted index:
+
+              1- Fetch the Document & Removing of Stop Words
+              2- Stemming of Root Word (this will make the search easier for users)
+              3- Record Document IDs
+i'm loving these dogs and watching them eating is my favourite thing
+              */
+
+              //Fetching Documents
+              // let Docs = this.Documents.map( el=> ({text:el.Content,id:el.Name}))
+              //Stemming and Removing Stopwords
+              let terms = this.getUniqueTerms(this.bagOfWords)
+              console.log(terms)
+              terms.forEach((term)=>{
+                if(!Structure[term]){
+                  let FoundDocs =  []
+                  this.Documents.forEach((doc)=> doc.cleaned.includes(term)?FoundDocs.push(doc.Name):null)
+                  Structure[term] = {
+                    Docs: FoundDocs,
+                }
+              }
+              })
+              console.log(Structure)
+
+              //Record Document IDs
+              
+              //console.log(Stemmed)
             },
             //a function to return new array of all the words so far from documents without Stop words
             removeStopWords  : Document => Document.filter( term => stopwords.includes(term) !=true ),

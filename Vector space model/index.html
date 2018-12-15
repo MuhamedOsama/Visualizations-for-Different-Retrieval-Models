@@ -54,7 +54,7 @@
                     <v-btn class="black" dark large @click="calc_TFVector()">
                         Calculate tf
                     </v-btn>
-                    <v-btn class="black" dark large @click="">
+                    <v-btn class="black" dark large @click="calc_TF_IDFVector()">
                         Calculate tf*idf
                     </v-btn>
                 </v-flex>
@@ -88,6 +88,23 @@
                                 <th class="pa-2 display-1" v-for="header in tfheaders">{{header}}</th>
                             </tr>
                             <tr v-for="(term,i) in tfvector">
+                                <td>{{wordsList[i].termName}}</td>
+                                <td v-for="bool in term">{{bool}}</td>
+                            </tr>
+                        </table>
+                    </v-flex>
+                    </div>
+                </v-flex>
+                <v-flex xs12></v-flex>
+                <v-flex xs6 class="text-xs-center">
+                    <div class="font-weight-thin display-3 mb-2 mt-2">TF*IDF For Each Word</div>
+                    <v-flex v-if="!tfidfvectorex" class="font-weight-thin display-1">TF*IDF not Calculated</v-flex>
+                    <v-flex v-else>
+                        <table v-if="tfvector" class="elevation-15 text-xs-center">
+                            <tr>
+                                <th class="pa-2 display-1" v-for="header in tfheaders">{{header}}</th>
+                            </tr>
+                            <tr v-for="(term,i) in tfidfvector">
                                 <td>{{wordsList[i].termName}}</td>
                                 <td v-for="bool in term">{{bool}}</td>
                             </tr>
@@ -145,14 +162,15 @@
                     QueryText: '',
                     idfCalc: false,
                     tfvectorex: false,
-                    tdidfCalc: false,
+                    tfidfvectorex: false,
 
                     wordsList: [],
                     Documents: [],
                     tfheaders: [],
                     result: [],
                     tfvector: [],
-
+                    tfidfvector: [],
+                    
                     QueryRule: [
                         v => !!v || 'A Query is required'
                     ],
@@ -201,7 +219,6 @@
                     console.log(this.wordsList)
                 },
                 calc_TFVector: function () {
-
                     this.tfheaders = ['Words/Docs']
                     this.Documents.forEach((doc, index) => this.tfheaders.push(`Doc ${index+1}`))
 
@@ -224,6 +241,27 @@
                     }
                     console.log(this.tfvector)
                     this.tfvectorex = true
+                },
+                calc_TF_IDFVector: function () {
+                    for (let wordid = 0; wordid < this.wordsList.length; wordid++) {
+                        this.tfidfvector.push(new Array());
+                        for (let docid = 0; docid < this.Documents.length; docid++) {
+                            this.tfidfvector[wordid].push(0);
+                        }
+                    }
+
+                    for (let docid = 0; docid < this.Documents.length; docid++) {
+                        for (let wordid = 0; wordid < this.wordsList.length; wordid++) {
+                            if (this.Documents[docid].Content.toLowerCase().includes(this.wordsList[wordid]
+                                    .termName)) {
+                                this.tfidfvector[wordid][docid] = this.tfvector[wordid][docid]*this.wordsList[wordid].idf
+                            } else {
+                                this.tfidfvector[wordid][docid] = 0
+                            }
+                        }
+                    }
+                    console.log(this.tfidfvectorex)
+                    this.tfidfvectorex = true
                 }
             }
         })

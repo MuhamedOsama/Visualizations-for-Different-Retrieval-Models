@@ -23,7 +23,12 @@
                 Add Document
               </v-btn>
               <v-btn class="coral" dark large @click="GenerateIIM()">
-                Generate Inverted Index Model
+                <template v-if="!Structure">
+                Prepare Inverted Index Model
+              </template>
+              <template v-else>
+                Ready for Queries
+              </template>
               </v-btn>
             </v-flex>
           </v-form>
@@ -110,10 +115,11 @@
          data(){
              return {
                     form:true,
+                    Ready:false,
                     CurrentDocumentContent:'',
                     bagOfWords:[],
                     postingList:[],
-                    Structure:{},
+                    Structure:null,
                     QueryText:'',
                     InvertedIndex:[],
                     matchedDocs:[],
@@ -132,6 +138,7 @@
          methods : {
             handleNewDoc : function(){
                 if(/\S/.test(this.CurrentDocumentContent)){
+                  this.Structure = null
                 //DOC TEXT
                 let Content = this.CurrentDocumentContent
                 //DOC WITH OUT STOPWORDS >> ARRAY OF TERMS
@@ -152,6 +159,7 @@
               this.postingList = []
               this.postingList = this.Structure[stemmer(this.QueryText)].Docs
               this.Documents.map((doc)=> this.postingList.includes(doc.Name) ? this.matchedDocs.push({Content: doc.Content,Name:doc.Name}) : '')
+              this.Ready = true
               console.log(this.Structure)
             } ,
             GenerateIIM: function(){

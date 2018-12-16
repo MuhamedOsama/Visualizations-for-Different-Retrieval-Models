@@ -9,11 +9,14 @@
 
 <body>
     <v-app id="app">
-        
-                    
         <v-container>
             <v-layout row wrap align-center style="justify-content: center;align-items:center;">
-                        <v-flex xs6 class="text-xs-center">
+                <v-tabs v-model="active" color="cyan" dark slider-color="yellow">
+                    <v-tab ripple>
+                        Step 1 - Add Documents
+                    </v-tab>
+                    <v-tab-item>
+                        <v-flex mt-3 class="text-xs-center">
                             <v-form v-model="form">
                                 <v-flex mt-4>
                                 </v-flex>
@@ -28,210 +31,247 @@
                                 </v-flex>
                             </v-form>
                         </v-flex>
-                        
-                   
-                
-                    <v-flex xs12></v-flex>
-                    <v-flex xs6 class="text-xs-center">
-                        <div class="font-weight-thin display-3 mb-2 mt-2">Documents</div>
-                        <v-flex v-if="!Documents.length" class="font-weight-thin display-1">No Documents to Show</v-flex>
-                        <v-flex v-else>
-                            <template v-for="(item,i) in this.Documents">
-                                <v-card class="red lighten-4">
-                                    <v-flex class="ma-2">
-                                        <div class="display-2">{{item.Name}}</div>
-                                        <v-list-tile>
-                                            <v-list-tile-content>
-                                                {{item.Content}}
-                                            </v-list-tile-content>
-                                        </v-list-tile>
-                                    </v-flex>
-                                </v-card>
-                            </template>
+                        <v-flex xs12></v-flex>
+                        <v-flex mt-3 class="text-xs-center">
+                            <div class="font-weight-thin display-3 mb-2 mt-2">Documents</div>
+                            <v-flex v-if="!Documents.length" class="font-weight-thin display-1">No Documents to Show</v-flex>
+                            <v-flex v-else>
+                                <template v-for="(item,i) in this.Documents">
+                                    <v-card class="red lighten-4">
+                                        <v-flex class="ma-2">
+                                            <div class="display-2">{{item.Name}}</div>
+                                            <v-list-tile>
+                                                <v-list-tile-content>
+                                                    {{item.Content}}
+                                                </v-list-tile-content>
+                                            </v-list-tile>
+                                        </v-flex>
+                                    </v-card>
+                                </template>
+                            </v-flex>
+                            </div>
                         </v-flex>
-                        </div>
-                    </v-flex>
-                    <v-flex xs12></v-flex>
-                    <v-flex mt-3 class="text-xs-center">
-                        <v-btn class="black" dark large @click="calc_IDF()">
-                            Calculate idf
-                        </v-btn>
-                        <v-btn class="black" dark large @click="calc_TFVector()">
-                            Calculate tf
-                        </v-btn>
-                        <v-btn class="black" dark large @click="calc_TF_IDFVector()">
-                            Calculate tf*idf
-                        </v-btn>
-                    </v-flex>
-                    <v-flex xs12></v-flex>
-                    <v-flex xs6 class="text-xs-center">
-                        <div class="font-weight-thin display-3 mb-2 mt-2">IDF For Each Word</div>
-                        <v-flex v-if="!idfCalc" class="font-weight-thin display-1">IDFs not Calculated</v-flex>
-                        <v-flex v-else>
-                            <template v-for="(item,i) in this.wordsList">
+                        <v-flex xs12></v-flex>
+                        <v-flex xs1 class="text-xs-center">
+                            <v-btn class="Blue" dark color="blue" large @click="next()">
+                                Next
+                            </v-btn>
+                        </v-flex>
+                    </v-tab-item>
+                    <v-tab ripple>
+                        Step 2 - Calculate Doc TF-IDF
+                    </v-tab>
+                    <v-tab-item>
+                        <v-flex mt-3 class="text-xs-center">
+                            <v-btn class="black" dark large @click="calc_IDF()">
+                                Calculate idf
+                            </v-btn>
+                            <v-btn class="black" dark large @click="calc_TFVector()">
+                                Calculate tf
+                            </v-btn>
+                            <v-btn class="black" dark large @click="calc_TF_IDFVector()">
+                                Calculate tf*idf
+                            </v-btn>
+                        </v-flex>
+                        <v-flex mt-3 class="text-xs-center">
+                            <div class="font-weight-thin display-3 mb-2 mt-2">IDF For Each Word</div>
+                            <v-flex v-if="!idfCalc" class="font-weight-thin display-1">IDFs not Calculated</v-flex>
+                            <v-flex v-else>
+                                <template v-for="(item,i) in this.wordsList">
+                                    <v-card class="blue lighten-4">
+                                        <v-flex class="ma-2">
+                                            <v-list-tile>
+                                                <v-list-tile-content>
+                                                    {{item.termName}} idf =
+                                                    log10({{Documents.length}}/{{item.termDublications}}) = {{item.idf}}
+                                                </v-list-tile-content>
+                                            </v-list-tile>
+                                        </v-flex>
+                                    </v-card>
+                                </template>
+                            </v-flex>
+                            </div>
+                        </v-flex>
+                        <v-flex xs12></v-flex>
+                        <v-flex mt-3 class="text-xs-center">
+                            <div class="font-weight-thin display-3 mb-2 mt-2">TF For Each Word</div>
+                            <v-flex v-if="!tfvectorex" class="font-weight-thin display-1">TFs not Calculated</v-flex>
+                            <v-flex v-else>
+                                <table v-if="tfvector" class="elevation-15 text-xs-center">
+                                    <tr>
+                                        <th class="pa-2 display-1" v-for="header in tfheaders">{{header}}</th>
+                                    </tr>
+                                    <tr v-for="(term,i) in tfvector">
+                                        <td>{{wordsList[i].termName}}</td>
+                                        <td v-for="bool in term">{{bool}}</td>
+                                    </tr>
+                                </table>
+                            </v-flex>
+                            </div>
+                        </v-flex>
+                        <v-flex xs12></v-flex>
+                        <v-flex mt-3 class="text-xs-center">
+                            <div class="font-weight-thin display-3 mb-2 mt-2">TF*IDF For Each Word</div>
+                            <v-flex v-if="!tfidfvectorex" class="font-weight-thin display-1">TF*IDF not Calculated</v-flex>
+                            <v-flex v-else>
+                                <table v-if="tfvector" class="elevation-15 text-xs-center">
+                                    <tr>
+                                        <th class="pa-2 display-1" v-for="header in tfheaders">{{header}}</th>
+                                    </tr>
+                                    <tr v-for="(term,i) in tfidfvector">
+                                        <td>{{wordsList[i].termName}}</td>
+                                        <td v-for="bool in term">{{bool}}</td>
+                                    </tr>
+                                </table>
+                            </v-flex>
+                            </div>
+                        </v-flex>
+                        <v-flex xs12></v-flex>
+                        <v-flex xs1 class="text-xs-center">
+                            <v-btn class="Blue" dark color="blue" large @click="next()">
+                                Next
+                            </v-btn>
+                        </v-flex>
+                    </v-tab-item>
+                    <v-tab ripple>
+                        Step 3 - Enter Query
+                    </v-tab>
+                    <v-tab-item>
+                        <v-flex xs12></v-flex>
+                        <div class="font-weight-thin display-3 mb-2 mt-2">Enter Query</div>
+                        <v-flex xs12></v-flex>
+                        <v-flex mt-3 class="text-xs-center">
+                            <v-text-field @change="" v-model="QueryText" label="Enter a Query" :rules="QueryRule" clearable
+                                auto-grow box mt-4></v-text-field>
+                        </v-flex>
+                        <v-flex xs12></v-flex>
+                        <v-flex xs1 class="text-xs-center">
+                            <v-btn class="Blue" dark color="blue" large @click="calc_TF_IDFQuery()">
+                                Next
+                            </v-btn>
+                        </v-flex>
+                    </v-tab-item>
+                    <v-tab ripple>
+                        Step 4 - Calculate Query TF-IDF
+                    </v-tab>
+                    <v-tab-item>
+                        <v-flex xs12></v-flex>
+                        <div class="font-weight-thin display-3 mb-2 mt-2">Calculate Query TF-IDF</div>
+                        <v-flex xs12></v-flex>
+                        <v-flex mt-3 class="text-xs-center">
+                            <div class="font-weight-thin display-3 mb-2 mt-2">TF*IDF For Each Query Word</div>
+                            <v-flex v-if="!tfidfqueryex" class="font-weight-thin display-1">TF*IDF not Calculated</v-flex>
+                            <v-flex v-else>
+                                <template v-for="(item,i) in this.tfidfquery">
+                                    <v-card class="blue lighten-4">
+                                        <v-flex class="ma-2">
+                                            <v-list-tile>
+                                                <v-list-tile-content>
+                                                    {{item.termName}} TF*IDF = {{item.termDublications}} * {{item.termidf}}
+                                                    =
+                                                    {{item.tfidf}}
+                                                </v-list-tile-content>
+                                            </v-list-tile>
+                                        </v-flex>
+                                    </v-card>
+                                </template>
+                            </v-flex>
+                            </div>
+                        </v-flex>
+                        <v-flex xs12></v-flex>
+                        <v-flex xs1 class="text-xs-center">
+                            <v-btn class="Blue" dark color="blue" large @click="calc_TF_IDFQuery()">
+                                Next
+                            </v-btn>
+                        </v-flex>
+                    </v-tab-item>
+                    <v-tab ripple>
+                        Step 5 - Sim() and CosSim()
+                    </v-tab>
+                    <v-tab-item>
+                        <v-flex xs12></v-flex>
+                        <v-flex mt-3 class="text-xs-center">
+                            <v-btn class="black" dark large @click="calc_length()">
+                                Calculate lengths
+                            </v-btn>
+                            <v-btn class="black" dark large @click="calc_sim()">
+                                Calculate sim
+                            </v-btn>
+                            <v-btn class="black" dark large @click="calc_cosSim()">
+                                Calculate cossim
+                            </v-btn>
+                        </v-flex>
+                        <v-flex xs12></v-flex>
+                        <v-flex mt-3 class="text-xs-center">
+                            <div class="font-weight-thin display-3 mb-2 mt-2">lengths</div>
+                            <v-flex v-if="!lengthex" class="font-weight-thin display-1">lengths not Calculated</v-flex>
+                            <v-flex v-else>
                                 <v-card class="blue lighten-4">
                                     <v-flex class="ma-2">
                                         <v-list-tile>
                                             <v-list-tile-content>
-                                                {{item.termName}} idf =
-                                                log10({{Documents.length}}/{{item.termDublications}}) = {{item.idf}}
+                                                length of q = {{this.length[0]}}
                                             </v-list-tile-content>
                                         </v-list-tile>
                                     </v-flex>
                                 </v-card>
-                            </template>
+                                <template v-for="(item,i) in this.length">
+                                    <v-card v-if="i != 0" class="blue lighten-4">
+                                        <v-flex class="ma-2">
+                                            <v-list-tile>
+                                                <v-list-tile-content>
+                                                    length of D{{i}} = {{item}}
+                                                </v-list-tile-content>
+                                            </v-list-tile>
+                                        </v-flex>
+                                    </v-card>
+                                </template>
+                            </v-flex>
+                            </div>
                         </v-flex>
-                        </div>
-                    </v-flex>
-                    <v-flex xs12></v-flex>
-                    <v-flex xs6 class="text-xs-center">
-                        <div class="font-weight-thin display-3 mb-2 mt-2">TF For Each Word</div>
-                        <v-flex v-if="!tfvectorex" class="font-weight-thin display-1">TFs not Calculated</v-flex>
-                        <v-flex v-else>
-                            <table v-if="tfvector" class="elevation-15 text-xs-center">
-                                <tr>
-                                    <th class="pa-2 display-1" v-for="header in tfheaders">{{header}}</th>
-                                </tr>
-                                <tr v-for="(term,i) in tfvector">
-                                    <td>{{wordsList[i].termName}}</td>
-                                    <td v-for="bool in term">{{bool}}</td>
-                                </tr>
-                            </table>
+                        <v-flex xs12></v-flex>
+                        <v-flex mt-3 class="text-xs-center">
+                            <div class="font-weight-thin display-3 mb-2 mt-2">Sim()</div>
+                            <v-flex v-if="!simex" class="font-weight-thin display-1">Sim() not Calculated</v-flex>
+                            <v-flex v-else>
+                                <template v-for="(item,i) in this.sim">
+                                    <v-card class="blue lighten-4">
+                                        <v-flex class="ma-2">
+                                            <v-list-tile>
+                                                <v-list-tile-content>
+                                                    Sim(D{{i+1}},q) = {{item.toFixed(3)}}
+                                                </v-list-tile-content>
+                                            </v-list-tile>
+                                        </v-flex>
+                                    </v-card>
+                                </template>
+                            </v-flex>
+                            </div>
                         </v-flex>
-                        </div>
-                    </v-flex>
-                    <v-flex xs12></v-flex>
-                    <v-flex xs6 class="text-xs-center">
-                        <div class="font-weight-thin display-3 mb-2 mt-2">TF*IDF For Each Word</div>
-                        <v-flex v-if="!tfidfvectorex" class="font-weight-thin display-1">TF*IDF not Calculated</v-flex>
-                        <v-flex v-else>
-                            <table v-if="tfvector" class="elevation-15 text-xs-center">
-                                <tr>
-                                    <th class="pa-2 display-1" v-for="header in tfheaders">{{header}}</th>
-                                </tr>
-                                <tr v-for="(term,i) in tfidfvector">
-                                    <td>{{wordsList[i].termName}}</td>
-                                    <td v-for="bool in term">{{bool}}</td>
-                                </tr>
-                            </table>
+                        <v-flex xs12></v-flex>
+                        <v-flex mt-3 class="text-xs-center">
+                            <div class="font-weight-thin display-3 mb-2 mt-2">CosSim()</div>
+                            <v-flex v-if="!cossimex" class="font-weight-thin display-1">CosSim() not Calculated</v-flex>
+                            <v-flex v-else>
+                                <template v-for="(item,i) in this.cossim">
+                                    <v-card class="blue lighten-4">
+                                        <v-flex class="ma-2">
+                                            <v-list-tile>
+                                                <v-list-tile-content>
+                                                    Doc {{item.docid}} : CosSim(D{{item.docid}},q) =
+                                                    {{item.value.toFixed(3)}}
+                                                </v-list-tile-content>
+                                            </v-list-tile>
+                                        </v-flex>
+                                    </v-card>
+                                </template>
+                            </v-flex>
+                            </div>
                         </v-flex>
-                        </div>
-                    </v-flex>
-                    <v-flex xs12></v-flex>
-                    <div class="font-weight-thin display-3 mb-2 mt-2">Enter Query</div>
-                    <v-flex xs12></v-flex>
-                    <v-flex xs6 class="text-xs-center">
-                        <v-text-field @change="" v-model="QueryText" label="Enter a Query" :rules="QueryRule" clearable
-                            auto-grow box mt-4></v-text-field>
-                    </v-flex>
-                    <v-flex xs12></v-flex>
-                    <v-flex xs6 class="text-xs-center">
-                        <v-btn class="Blue" dark large @click="calc_TF_IDFQuery()">
-                            Go
-                        </v-btn>
-                    </v-flex>
-                    <v-flex xs12></v-flex>
-                    <v-flex xs6 class="text-xs-center">
-                        <div class="font-weight-thin display-3 mb-2 mt-2">TF*IDF For Each Query Word</div>
-                        <v-flex v-if="!tfidfqueryex" class="font-weight-thin display-1">TF*IDF not Calculated</v-flex>
-                        <v-flex v-else>
-                            <template v-for="(item,i) in this.tfidfquery">
-                                <v-card class="blue lighten-4">
-                                    <v-flex class="ma-2">
-                                        <v-list-tile>
-                                            <v-list-tile-content>
-                                                {{item.termName}} TF*IDF = {{item.termDublications}} * {{item.termidf}} =
-                                                {{item.tfidf}}
-                                            </v-list-tile-content>
-                                        </v-list-tile>
-                                    </v-flex>
-                                </v-card>
-                            </template>
-                        </v-flex>
-                        </div>
-                    </v-flex>
-                    <v-flex xs12></v-flex>
-                    <v-flex mt-3 class="text-xs-center">
-                        <v-btn class="black" dark large @click="calc_length()">
-                            Calculate lengths
-                        </v-btn>
-                        <v-btn class="black" dark large @click="calc_sim()">
-                            Calculate sim
-                        </v-btn>
-                        <v-btn class="black" dark large @click="calc_cosSim()">
-                            Calculate cossim
-                        </v-btn>
-                    </v-flex>
-                    <v-flex xs12></v-flex>
-                    <v-flex xs6 class="text-xs-center">
-                        <div class="font-weight-thin display-3 mb-2 mt-2">lengths</div>
-                        <v-flex v-if="!lengthex" class="font-weight-thin display-1">lengths not Calculated</v-flex>
-                        <v-flex v-else>
-                            <v-card class="blue lighten-4">
-                                <v-flex class="ma-2">
-                                    <v-list-tile>
-                                        <v-list-tile-content>
-                                            length of q = {{this.length[0]}}
-                                        </v-list-tile-content>
-                                    </v-list-tile>
-                                </v-flex>
-                            </v-card>
-                            <template v-for="(item,i) in this.length">
-                                <v-card v-if="i != 0" class="blue lighten-4">
-                                    <v-flex class="ma-2">
-                                        <v-list-tile>
-                                            <v-list-tile-content>
-                                                length of D{{i}} = {{item}}
-                                            </v-list-tile-content>
-                                        </v-list-tile>
-                                    </v-flex>
-                                </v-card>
-                            </template>
-                        </v-flex>
-                        </div>
-                    </v-flex>
-                    <v-flex xs12></v-flex>
-                    <v-flex xs6 class="text-xs-center">
-                        <div class="font-weight-thin display-3 mb-2 mt-2">Sim()</div>
-                        <v-flex v-if="!simex" class="font-weight-thin display-1">Sim() not Calculated</v-flex>
-                        <v-flex v-else>
-                            <template v-for="(item,i) in this.sim">
-                                <v-card class="blue lighten-4">
-                                    <v-flex class="ma-2">
-                                        <v-list-tile>
-                                            <v-list-tile-content>
-                                                Sim(D{{i+1}},q) = {{item.toFixed(3)}}
-                                            </v-list-tile-content>
-                                        </v-list-tile>
-                                    </v-flex>
-                                </v-card>
-                            </template>
-                        </v-flex>
-                        </div>
-                    </v-flex>
-                    <v-flex xs12></v-flex>
-                    <v-flex xs6 class="text-xs-center">
-                        <div class="font-weight-thin display-3 mb-2 mt-2">CosSim()</div>
-                        <v-flex v-if="!cossimex" class="font-weight-thin display-1">CosSim() not Calculated</v-flex>
-                        <v-flex v-else>
-                            <template v-for="(item,i) in this.cossim">
-                                <v-card class="blue lighten-4">
-                                    <v-flex class="ma-2">
-                                        <v-list-tile>
-                                            <v-list-tile-content>
-                                                Doc {{item.docid}} : CosSim(D{{item.docid}},q) = {{item.value.toFixed(3)}}
-                                            </v-list-tile-content>
-                                        </v-list-tile>
-                                    </v-flex>
-                                </v-card>
-                            </template>
-                        </v-flex>
-                        </div>
-                    </v-flex>
-                    <v-flex xs12></v-flex>
+                    </v-tab-item>
+                </v-tabs>
+                <v-flex xs12></v-flex>
             </v-layout>
-
-
         </v-container>
 
     </v-app>
@@ -279,7 +319,7 @@
             methods: {
                 next: function () {
                     const active = parseInt(this.active)
-                    this.active = (active < 2 ? active + 1 : 0)
+                    this.active = (active < 4 ? active + 1 : 0)
                 },
                 handleNewDoc: function () {
                     //Add to Documents
@@ -364,6 +404,7 @@
                     this.tfidfvectorex = true
                 },
                 calc_TF_IDFQuery: function () {
+                    this.next()
                     Querywords = this.QueryText.toLowerCase().split(' ')
                     Querywords.forEach((term) => {
                         let found = false
@@ -391,6 +432,7 @@
                     })
                     console.log(this.tfidfquery)
                     this.tfidfqueryex = true
+
                 },
                 calc_length: function () {
                     let querysums = 0;
